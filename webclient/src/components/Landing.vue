@@ -1,16 +1,6 @@
 <template>
   <v-container>
     <v-row class="text-center mt-4">
-      <!-- <v-col cols="12">
-        <v-img
-          :src="
-            require('@/assets/images/extruded/TwitchExtrudedWordmarkPurple.svg')
-          "
-          class="my-3"
-          contain
-          height="200"
-        />
-      </v-col> -->
       <v-col></v-col>
       <v-col cols="6">
         <h1 class="display-0 font-weight-medium">
@@ -82,7 +72,9 @@ import { Component, Vue } from "vue-property-decorator";
 @Component({
   components: {}
 })
-export default class Landing extends Vue {}
+export default class Landing extends Vue {
+  
+}
 </script>
 <style lang="scss">
 @import "../assets/scss/_variables";
