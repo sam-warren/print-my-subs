@@ -48,6 +48,7 @@
 import express from "express";
 import * as dotenv from "dotenv";
 import request from "request";
+
 dotenv.config();
 
 const app = express();
@@ -86,11 +87,14 @@ app.get("/get-token", (req, res) => {
   request(requestOptions, (err, response, body) => {
     if (err) {
       console.error(err);
-    } else  {
+    } else {
       console.log(body);
       res.send({ bearer_token: body });
     }
   });
+});
+
+app.get("/get-printers", (req, res) => {
 });
 
 // start the Express server

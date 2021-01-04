@@ -1,7 +1,22 @@
 <template>
-  <div>
-    Nice! You're all set.
-  </div>
+  <v-container>
+    <v-row class="text-center mt-4">
+      <v-col></v-col>
+      <v-col cols="4">
+        <v-img
+          :src="require('@/assets/images/material-checkmark.svg')"
+          class="my-3"
+          contain
+          height="100"
+        />
+        <h1 class="pt-4 display-1 font-weight-medium">
+          Nice! You're now linked to Twitch. Head back to the homepage to
+          continue setting up!
+        </h1>
+      </v-col>
+      <v-col></v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script lang="ts">
@@ -25,3 +40,9 @@ export default class LoginCallback extends Vue {
   }
 }
 </script>
+<style lang="scss">
+@import "../assets/scss/_variables";
+.checkbox {
+  color: $twitch_purple !important;
+}
+</style>

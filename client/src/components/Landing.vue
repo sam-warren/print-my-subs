@@ -64,6 +64,23 @@
               </v-row>
             </v-card-actions>
           </v-card-text>
+        </v-card> </v-col
+      ><v-col>
+        <v-card class="mx-auto my-4" max-width="400">
+          <v-card-title>Step 3: Start Printing!</v-card-title>
+          <v-card-text>
+            <v-row>
+              <v-col
+                >Once you have completed the previous two steps, click start to
+                begin printing your new subscribers!</v-col
+              >
+            </v-row>
+            <v-card-actions class="mt-4">
+              <v-row class="text-center">
+                <v-col><v-btn block class="button">start</v-btn></v-col>
+              </v-row>
+            </v-card-actions>
+          </v-card-text>
         </v-card>
       </v-col>
     </v-row>
