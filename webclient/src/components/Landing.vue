@@ -35,7 +35,11 @@
             </v-row>
             <v-card-actions class="mt-4">
               <v-row class="text-center">
-                <v-col><v-btn block class="button">Authetnicate</v-btn></v-col>
+                <v-col
+                  ><v-btn block class="button" @click="onAuthButtonClicked()"
+                    >Authetnicate</v-btn
+                  ></v-col
+                >
               </v-row>
             </v-card-actions>
           </v-card-text>
@@ -68,12 +72,21 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import axios from "axios";
 
-@Component({
-  components: {}
-})
+@Component({})
 export default class Landing extends Vue {
-  
+  private onAuthButtonClicked() {
+    axios({
+      url: "http://localhost:5000/authenticate",
+      method: "GET",
+      headers: {
+        
+      }
+    }).then(res => {
+      console.log(res);
+    });
+  }
 }
 </script>
 <style lang="scss">
