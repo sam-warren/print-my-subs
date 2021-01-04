@@ -1,34 +1,28 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary" dark>
+    <v-app-bar app color="#9146FF" dark>
       <div class="d-flex align-center">
         <v-img
           alt="Twitch Logo"
-          class="shrink mr-2"
+          class="shrink mr-4"
           contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
+          src="@/assets/images/wordmark/Twitch-Wordmark-White.svg"
           transition="scale-transition"
-          width="40"
+          width="120"
         />
-
-        <v-img
-          alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
-        />
+        <h1 class="display-1 font-weight-light">
+          print my subs
+        </h1>
       </div>
 
       <v-spacer></v-spacer>
 
       <v-btn
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
+        href="https://github.com/sam-warren/print-my-subs"
         target="_blank"
         text
       >
-        <span class="mr-2">Latest Release</span>
+        <span class="mr-2">source code</span>
         <v-icon>mdi-open-in-new</v-icon>
       </v-btn>
     </v-app-bar>
@@ -55,3 +49,4 @@ export default Vue.extend({
   })
 });
 </script>
+<style lang="scss"></style>
