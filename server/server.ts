@@ -47,6 +47,7 @@
 
 import express from "express";
 import * as dotenv from "dotenv";
+import request from "request";
 dotenv.config();
 
 const app = express();
@@ -63,11 +64,33 @@ app.use(function (req, res, next) {
 
 // define a route handler for the default home page
 app.get("/", (req, res) => {
-  res.send("Hello world!");
+  res.send("PrintMySubs API");
 });
 
-app.get("/authenticate", (req, res) => {
-  res.send(process.env.CLIENT_ID);
+app.get("/client-id", (req, res) => {
+  res.send({ client_id: process.env.CLIENT_ID });
+});
+
+app.get("/get-token", (req, res) => {
+  const requestOptions = {
+    url:
+      "https://id.twitch.tv/oauth2/token?client_id=" +
+      process.env.CLIENT_ID +
+      "&client_secret=" +
+      process.env.CLIENT_SECRET +
+      "&code=" +
+      req.query.code +
+      "&grant_type=authorization_code&redirect_uri=http://localhost:8080/login-callback",
+    method: "POST",
+  };
+  request(requestOptions, (err, response, body) => {
+    if (err) {
+      console.error(err);
+    } else  {
+      console.log(body);
+      res.send({ bearer_token: body });
+    }
+  });
 });
 
 // start the Express server

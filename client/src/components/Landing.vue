@@ -71,20 +71,25 @@
 </template>
 
 <script lang="ts">
+/* eslint-disable */
+
 import { Component, Vue } from "vue-property-decorator";
 import axios from "axios";
 
 @Component({})
 export default class Landing extends Vue {
+  private isAuthenticated: boolean = false;
+
   private onAuthButtonClicked() {
     axios({
-      url: "http://localhost:5000/authenticate",
+      url: "http://localhost:5000/client-id",
       method: "GET",
-      headers: {
-        
-      }
+      headers: {}
     }).then(res => {
-      console.log(res);
+      window.location.href =
+        "https://id.twitch.tv/oauth2/authorize?client_id=" +
+        res.data.client_id +
+        "&redirect_uri=http://localhost:8080/login-callback&response_type=code&scope=channel:read:subscriptions+channel_subscriptions";
     });
   }
 }

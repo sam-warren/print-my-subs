@@ -1,10 +1,17 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import Home from "../views/Home.vue";
+import LoginCallback from "../views/LoginCallback.vue";
 
 Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
+  {
+    path: "/login-callback",
+    name: "Login Callback",
+    component: LoginCallback,
+    props: true,
+  },
   {
     path: "/",
     name: "Home",
