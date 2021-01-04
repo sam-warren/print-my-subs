@@ -79,29 +79,3 @@ async function main() {
 }
 
 main();
-
-// import { ApiClient } from "twitch";
-// import { StaticAuthProvider } from "twitch-auth";
-// import { promises as fs } from "fs";
-// import { PubSubClient } from "twitch-pubsub-client";
-// import { PubSubSubscriptionMessage } from "twitch-pubsub-client";
-
-// async function main() {
-//   const clientId = "dyzlha8t15f4gzc7rv3w5l0gdl3949";
-//   const tokenData = JSON.parse(await fs.readFile("./tokens.json", "utf-8"));
-
-//   const authProvider = new StaticAuthProvider(clientId, tokenData.accessToken);
-//   const apiClient = new ApiClient({ authProvider });
-
-//   const pubSubClient = new PubSubClient();
-//   const userId = await pubSubClient.registerUserListener(apiClient);
-
-//   const listener = await pubSubClient.onSubscription(
-//     userId,
-//     (message: PubSubSubscriptionMessage) => {
-//       console.log(`${message.userDisplayName} just subscribed!`);
-//     }
-//   );
-// }
-
-// main();
