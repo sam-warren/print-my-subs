@@ -10,7 +10,7 @@
           transition="scale-transition"
           width="120"
         />
-        <h1 class="display-1 font-weight-light">
+        <h1 class="display-0 font-weight-light">
           print my subs
         </h1>
       </div>
