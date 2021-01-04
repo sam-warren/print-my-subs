@@ -1,19 +1,21 @@
 <template>
   <v-app dark>
     <v-app-bar app color="#9146FF" dark>
-      <div class="d-flex align-center">
-        <v-img
-          alt="Twitch Logo"
-          class="shrink mr-4"
-          contain
-          src="@/assets/images/wordmark/Twitch-Wordmark-White.svg"
-          transition="scale-transition"
-          width="120"
-        />
-        <h1 class="display-0 font-weight-light">
-          print my subs
-        </h1>
-      </div>
+      <router-link style="text-decoration: none; color: inherit;" to="/">
+        <div class="d-flex align-center">
+          <v-img
+            alt="Twitch Logo"
+            class="shrink mr-4"
+            contain
+            src="@/assets/images/wordmark/Twitch-Wordmark-White.svg"
+            transition="scale-transition"
+            width="120"
+          />
+          <h1 class="display-0 font-weight-light">
+            print my subs
+          </h1>
+        </div>
+      </router-link>
       <v-spacer></v-spacer>
       <v-btn
         href="https://github.com/sam-warren/print-my-subs"
