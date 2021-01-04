@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app dark>
     <v-app-bar app color="#9146FF" dark>
       <div class="d-flex align-center">
         <v-img
@@ -14,9 +14,7 @@
           print my subs
         </h1>
       </div>
-
       <v-spacer></v-spacer>
-
       <v-btn
         href="https://github.com/sam-warren/print-my-subs"
         target="_blank"
