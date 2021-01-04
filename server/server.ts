@@ -1,5 +1,4 @@
 import { RefreshableAuthProvider, StaticAuthProvider } from "twitch-auth";
-import { ChatClient } from "twitch-chat-client";
 import { promises as fs } from "fs";
 import { PubSubClient } from "twitch-pubsub-client";
 import { ApiClient } from "twitch";
@@ -34,40 +33,6 @@ async function main() {
   );
 
   const apiClient = new ApiClient({ authProvider });
-
-  // CHAT CLIENT
-  const chatClient = new ChatClient(authProvider, { channels: ["BlondRadio"] });
-  await chatClient.connect();
-
-  chatClient.onMessage((channel, user, message) => {
-    if (message === "!ping") {
-      chatClient.say(channel, "Pong!");
-    } else if (message === "!dice") {
-      const diceRoll = Math.floor(Math.random() * 6) + 1;
-      chatClient.say(channel, `@${user} rolled a ${diceRoll}`);
-    }
-  });
-
-  chatClient.onSub((channel, user) => {
-    chatClient.say(
-      channel,
-      `Thanks to @${user} for subscribing to the channel!`
-    );
-  });
-  chatClient.onResub((channel, user, subInfo) => {
-    chatClient.say(
-      channel,
-      `Thanks to @${user} for subscribing to the channel for a total of ${subInfo.months} months!`
-    );
-  });
-  chatClient.onSubGift((channel, user, subInfo) => {
-    chatClient.say(
-      channel,
-      `Thanks to ${subInfo.gifter} for gifting a subscription to ${user}!`
-    );
-  });
-
-  //PUBSUB
   const pubSubClient = new PubSubClient();
   const userId = await pubSubClient.registerUserListener(apiClient);
   const listener = await pubSubClient.onSubscription(
