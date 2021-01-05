@@ -25,7 +25,14 @@
     <v-row class="mt-4">
       <v-col>
         <v-card class="mx-auto my-4" max-width="400">
-          <v-card-title>Step 1: Authenticate with Twitch</v-card-title>
+          <v-card-title
+            >Step 1: Authenticate with Twitch
+            <v-img
+              :src="require('@/assets/images/material-checkmark.svg')"
+              class="my-3"
+              contain
+              height="25"
+          /></v-card-title>
           <v-card-text>
             <v-row>
               <v-col
@@ -36,10 +43,21 @@
             <v-card-actions class="mt-4">
               <v-row class="text-center">
                 <v-col
-                  ><v-btn block class="button" @click="onAuthButtonClicked()"
+                  ><v-btn
+                    v-if="!isAuthenticated"
+                    block
+                    class="button"
+                    @click="onAuthButtonClicked()"
                     >Authetnicate</v-btn
-                  ></v-col
-                >
+                  >
+                  <v-btn
+                    v-else
+                    block
+                    class="secondary"
+                    @click="onUnlinkButtonClicked()"
+                    >Unlink Account</v-btn
+                  >
+                </v-col>
               </v-row>
             </v-card-actions>
           </v-card-text>
@@ -99,7 +117,7 @@ export default class Landing extends Vue {
 
   private onAuthButtonClicked() {
     axios({
-      url: "http://localhost:5000/client-id",
+      url: "http://localhost:5010/client-id",
       method: "GET",
       headers: {}
     }).then(res => {
@@ -108,6 +126,10 @@ export default class Landing extends Vue {
         res.data.client_id +
         "&redirect_uri=http://localhost:8080/login-callback&response_type=code&scope=channel:read:subscriptions+channel_subscriptions";
     });
+  }
+
+  private onUnlinkButtonClicked() {
+    console.log("Unlink");
   }
 }
 </script>

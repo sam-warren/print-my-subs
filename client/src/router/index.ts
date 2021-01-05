@@ -9,8 +9,7 @@ const routes: Array<RouteConfig> = [
   {
     path: "/login-callback",
     name: "Login Callback",
-    component: LoginCallback,
-    props: true,
+    component: LoginCallback
   },
   {
     path: "/",
