@@ -76,7 +76,9 @@
             <v-card-actions class="mt-4">
               <v-row class="text-center">
                 <v-col>
-                  <v-btn block class="button">USB</v-btn>
+                  <v-btn block class="button" @click="printTestPage()"
+                    >USB</v-btn
+                  >
                 </v-col>
                 <v-col><v-btn block class="button">WiFi/LAN</v-btn></v-col>
               </v-row>
@@ -125,6 +127,15 @@ export default class Landing extends Vue {
         "https://id.twitch.tv/oauth2/authorize?client_id=" +
         res.data.client_id +
         "&redirect_uri=http://localhost:8080/login-callback&response_type=code&scope=channel:read:subscriptions+channel_subscriptions";
+    });
+  }
+
+  private printTestPage() {
+    axios({
+      url: "http://localhost:5010/print-test-page",
+      method: "GET"
+    }).then(res => {
+      console.log(res.data.message);
     });
   }
 
