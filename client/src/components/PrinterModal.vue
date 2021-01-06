@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="dialog" width="500">
-    <v-card v-if="hasTriedConnect === false">
+    <v-card v-if="!hasTriedConnect">
       <v-card-title class="headline">
         Search for a printer
       </v-card-title>
@@ -35,28 +35,19 @@
         <v-btn class="button mb-2" @click="setPrinter()">Search</v-btn>
       </v-card-actions>
     </v-card>
-    <v-card v-else-if="hasTriedConnect && printerConnected">
-      <v-card-title>Sweet!</v-card-title>
+    <v-card v-else>
+      <v-card-title>Did it work?</v-card-title>
       <v-card-text
-        >We were able to connect to {{ selectedPrinter }}. Make sure to print a
-        test page to make sure everything is working correctly.</v-card-text
+        >We just tried to print a message from your printer. If it worked,
+        you're ready to move onto the next step! If not, please try different
+        settings.</v-card-text
       >
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn class="button mb-2" @click="close()">close</v-btn>
-      </v-card-actions>
-    </v-card>
-    <v-card v-else-if="hasTriedConnect && !printerConnected"
-      ><v-card-title>Uh oh...</v-card-title>
-      <v-card-text
-        >Looks like we couldn't connect to your printer. Feel free to go back
-        and try again with a different printer or printer type.
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn class="button mb-2" @click="hasTriedConnect = false"
-          >Try again</v-btn
+        <v-btn class="button-outline mb-2" @click="goBack()"
+          >Try new settings</v-btn
         >
+        <v-btn class="button mb-2" @click="exit()">It worked!</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -66,6 +57,7 @@
 /* eslint-disable */
 import { Component, Vue, Prop, Watch, Emit } from "vue-property-decorator";
 import axios from "axios";
+import { nextTick } from "vue/types/umd";
 
 @Component
 export default class PrinterModal extends Vue {
@@ -75,7 +67,6 @@ export default class PrinterModal extends Vue {
   private selectedPrinterType: string = "";
   private printerTypes: string[] = ["EPSON", "STAR"];
   private hasTriedConnect: boolean = false;
-  private printerConnected: boolean = false;
 
   @Prop() isVisible!: boolean;
 
@@ -102,6 +93,7 @@ export default class PrinterModal extends Vue {
   }
 
   private setPrinter() {
+    this.hasTriedConnect = true;
     axios({
       url: "http://localhost:5010/printers",
       method: "POST",
@@ -111,19 +103,22 @@ export default class PrinterModal extends Vue {
       }
     }).then(res => {
       console.log(res);
-      if (res.status === 200) {
-        this.hasTriedConnect = true;
-        this.printerConnected = true;
-      } else {
-        this.hasTriedConnect = true;
-        this.printerConnected = false;
-      }
     });
+  }
+
+  private goBack() {
+    this.hasTriedConnect = false;
+  }
+
+  private exit() {
+    this.dialog = false;
+    setTimeout(() => {
+      this.hasTriedConnect = false;
+    }, 500);
   }
 
   private close() {
     this.dialog = false;
-    this.hasTriedConnect = false;
     this.emitClose();
   }
 
@@ -138,5 +133,10 @@ export default class PrinterModal extends Vue {
 .button {
   background-color: $twitch_purple !important;
   color: white !important;
+}
+
+.button-outline {
+  background-color: white !important;
+  color: $twitch_purple !important;
 }
 </style>
