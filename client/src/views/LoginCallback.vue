@@ -48,6 +48,10 @@ export default class LoginCallback extends Vue {
   private gotBearer = false;
   private isLoading = true;
 
+  /*  
+      mounted
+      Sends the code to the server to retrieve a new access token
+  */ 
   private mounted() {
     console.log(this.$route.query.code);
     axios({

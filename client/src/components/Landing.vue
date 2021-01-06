@@ -25,15 +25,7 @@
     <v-row class="mt-4">
       <v-col>
         <v-card class="mx-auto my-4" max-width="400">
-          <v-card-title
-            >Step 1: Authenticate with Twitch
-            <!-- <v-img
-              :src="require('@/assets/images/material-checkmark.svg')"
-              class="my-3"
-              contain
-              height="25"
-          /> -->
-          </v-card-title>
+          <v-card-title>Step 1: Authenticate with Twitch </v-card-title>
           <v-card-text>
             <v-row>
               <v-col
@@ -130,7 +122,6 @@
 
 <script lang="ts">
 /* eslint-disable */
-
 import { Component, Vue } from "vue-property-decorator";
 import PrinterModal from "./PrinterModal.vue";
 import axios from "axios";
@@ -144,6 +135,11 @@ export default class Landing extends Vue {
   private isAuthenticated: boolean = false;
   private textInput = "";
   private isVisible = false;
+
+  /*  
+      onAuthButtonClicked
+      Initiates OAuth 2.0 procedure for Twitch.tv to set an access token
+  */
   private onAuthButtonClicked() {
     axios({
       url: "http://localhost:5010/client-id",
@@ -157,6 +153,11 @@ export default class Landing extends Vue {
     });
   }
 
+  /*  
+      printSomeText
+      Prints the text input in the field
+  */
+
   private printSomeText() {
     axios({
       url: "http://localhost:5010/print-text",
@@ -169,10 +170,18 @@ export default class Landing extends Vue {
     });
   }
 
+  /*  
+      onUnlinkButtonClicked
+      Not yet implemented
+  */
   private onUnlinkButtonClicked() {
     console.log("Unlink");
   }
 
+  /*  
+      toggleModal
+      Toggles the printer modal
+  */
   private toggleModal() {
     this.isVisible = !this.isVisible;
   }

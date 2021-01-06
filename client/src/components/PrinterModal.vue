@@ -80,6 +80,10 @@ export default class PrinterModal extends Vue {
     val || this.close();
   }
 
+  /*  
+      mounted
+      Get a list of printers available on the device
+  */ 
   private mounted() {
     axios({
       url: "http://localhost:5010/printers",
@@ -92,6 +96,11 @@ export default class PrinterModal extends Vue {
     });
   }
 
+  /*  
+      setPrinter
+      Attempts to access a printer with the
+      user's properties and print a test page.
+  */ 
   private setPrinter() {
     this.hasTriedConnect = true;
     axios({
@@ -106,10 +115,19 @@ export default class PrinterModal extends Vue {
     });
   }
 
+  /*  
+      goBack
+      Reverts modal to printer select state
+  */ 
   private goBack() {
     this.hasTriedConnect = false;
   }
 
+  /*  
+      exit
+      Special case to close modal from test view
+      and reset its state
+  */
   private exit() {
     this.dialog = false;
     setTimeout(() => {
@@ -117,6 +135,10 @@ export default class PrinterModal extends Vue {
     }, 500);
   }
 
+  /*  
+      close
+      Closes the modal and resets its state
+  */
   private close() {
     this.dialog = false;
     this.emitClose();
