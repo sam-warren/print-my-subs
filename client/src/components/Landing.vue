@@ -73,21 +73,40 @@
                 network</v-col
               >
             </v-row>
-            <v-card-actions class="mt-4">
-              <v-row class="text-center">
-                <v-col>
-                  <v-btn block class="button" @click="printTestPage()"
-                    >USB</v-btn
-                  >
-                </v-col>
-                <v-col><v-btn block class="button">WiFi/LAN</v-btn></v-col>
-              </v-row>
-            </v-card-actions>
+            <v-row class="text-center">
+              <v-col>
+                <v-btn block class="button" @click="toggleModal"
+                  >Search for a printer</v-btn
+                >
+              </v-col>
+            </v-row>
+          </v-card-text>
+          <v-card-title>Step 3: Test your printer</v-card-title>
+          <v-card-text>
+            <div>
+              Enter some text below, then click "print test" to print a test
+              page and ensure your printer is connected and working as expected.
+            </div>
+            <v-row class="text-center mt-2">
+              <v-col>
+                <v-text-field
+                  label="Text Input"
+                  v-model="textInput"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
+                <v-btn block class="button" @click="printSomeText()"
+                  >Print test</v-btn
+                >
+              </v-col>
+            </v-row>
           </v-card-text>
         </v-card> </v-col
       ><v-col>
         <v-card class="mx-auto my-4" max-width="400">
-          <v-card-title>Step 3: Start Printing!</v-card-title>
+          <v-card-title>Step 4: Start Printing!</v-card-title>
           <v-card-text>
             <v-row>
               <v-col
@@ -104,6 +123,7 @@
         </v-card>
       </v-col>
     </v-row>
+    <PrinterModal :is-visible="isVisible" @emit-close="toggleModal" />
   </v-container>
 </template>
 
@@ -111,12 +131,18 @@
 /* eslint-disable */
 
 import { Component, Vue } from "vue-property-decorator";
+import PrinterModal from "./PrinterModal.vue";
 import axios from "axios";
 
-@Component({})
+@Component({
+  components: {
+    PrinterModal: PrinterModal
+  }
+})
 export default class Landing extends Vue {
   private isAuthenticated: boolean = false;
-
+  private textInput = "";
+  private isVisible = false;
   private onAuthButtonClicked() {
     axios({
       url: "http://localhost:5010/client-id",
@@ -130,10 +156,14 @@ export default class Landing extends Vue {
     });
   }
 
-  private printTestPage() {
+  private printSomeText() {
+    console.log("text to send: ", this.textInput);
     axios({
-      url: "http://localhost:5010/print-test-page",
-      method: "GET"
+      url: "http://localhost:5010/print-text",
+      method: "POST",
+      data: {
+        text: this.textInput
+      }
     }).then(res => {
       console.log(res.data.message);
     });
@@ -141,6 +171,10 @@ export default class Landing extends Vue {
 
   private onUnlinkButtonClicked() {
     console.log("Unlink");
+  }
+
+  private toggleModal() {
+    this.isVisible = !this.isVisible;
   }
 }
 </script>
