@@ -55,7 +55,6 @@ export default class LoginCallback extends Vue {
       method: "GET"
     }).then(res => {
       res.status === 200 ? (this.gotBearer = true) : (this.gotBearer = false);
-      console.log("Result of bearer: ", res);
       this.isLoading = false;
     });
   }

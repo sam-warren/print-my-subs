@@ -50,8 +50,7 @@ import * as dotenv from "dotenv";
 import request from "request";
 import models, { connectDb } from "./models";
 import * as ThermalPrinter from "node-thermal-printer";
-import * as printer from "printer";
-// import Token from "./models/token.";
+import * as mongoose from "mongoose";
 
 dotenv.config();
 
@@ -62,8 +61,8 @@ const PrinterTypes = ThermalPrinter.types;
 
 async function print() {
   let printer = new Printer({
-    type: PrinterTypes.EPSON, // 'star' or 'epson'
-    interface: "printer:Thermal Printer",
+    type: PrinterTypes.EPSON, // 'star' or 'epson' TODO: Maybe change this.
+    interface: "printer:Thermal Printer", // TODO: update this with actual printer name
     driver: require("printer"),
     options: {
       timeout: 1000,
@@ -76,92 +75,29 @@ async function print() {
 
   let isConnected = await printer.isPrinterConnected();
   console.log("Printer connected:", isConnected);
-  printer.alignLeft();
-  printer.newLine();
-  printer.println("Hello World!");
-  printer.drawLine();
 
-  printer.upsideDown(true);
-  printer.println("Hello World upside down!");
-  printer.upsideDown(false);
-  printer.drawLine();
-
-  printer.invert(true);
-  printer.println("Hello World inverted!");
-  printer.invert(false);
-  printer.drawLine();
-
-  printer.println("Special characters: ČčŠšŽžĐđĆćßẞöÖÄäüÜé");
-  printer.drawLine();
-
-  printer.setTypeFontB();
-  printer.println("Type font B");
-  printer.setTypeFontA();
-  printer.println("Type font A");
-  printer.drawLine();
-
-  printer.alignLeft();
-  printer.println("This text is on the left");
   printer.alignCenter();
-  printer.println("This text is in the middle");
-  printer.alignRight();
-  printer.println("This text is on the right");
-  printer.alignLeft();
-  printer.drawLine();
-
-  printer.setTextDoubleHeight();
-  printer.println("This is double height");
-  printer.setTextDoubleWidth();
-  printer.println("This is double width");
-  printer.setTextQuadArea();
-  printer.println("This is quad");
-  printer.setTextSize(7, 7);
-  printer.println("Wow");
-  printer.setTextSize(0, 0);
-  printer.setTextNormal();
-  printer.println("This is normal");
-  printer.drawLine();
-
-  try {
-    printer.printBarcode("4126570807191");
-    printer.code128("4126570807191", {
-      height: 50,
-      text: 1,
-    });
-    printer.beep();
-  } catch (error) {
-    console.error(error);
-  }
-
-  printer.pdf417("4126565129008670807191");
-  printer.printQR("https://olaii.com");
-
+  printer.println("print my subs for");
+  await printer.printImage("./assets/TwitchBlack.png");
   printer.newLine();
-
-  printer.leftRight("Left", "Right");
-
-  printer.table(["One", "Two", "Three", "Four"]);
-
-  printer.tableCustom([
-    { text: "Left", align: "LEFT", width: 0.5 },
-    { text: "Center", align: "CENTER", width: 0.25, bold: true },
-    { text: "Right", align: "RIGHT", width: 0.25 },
-  ]);
-
-  printer.tableCustom([
-    { text: "Left", align: "LEFT", cols: 8 },
-    { text: "Center", align: "CENTER", cols: 10, bold: true },
-    { text: "Right", align: "RIGHT", cols: 10 },
-  ]);
-
+  printer.setTextQuadArea();
+  printer.println("New Subscriber!");
+  printer.setTextNormal();
+  printer.drawLine();
+  printer.println("Hey Blond Radio,"); // TODO: Add channel name
+  printer.setTextQuadArea();
+  printer.invert(true);
+  printer.println(" sammywarren "); // TODO: Add username that subscribed
+  printer.invert(false);
+  printer.setTextNormal();
+  printer.println("just subscribed to your channel!");
   printer.cut();
-  printer.openCashDrawer();
-
+  printer.beep();
   try {
     await printer.execute();
     console.log("Print success.");
   } catch (error) {
-    console.error("Print error:", error);
+    console.error("Print error:", error); //TODO: Send error back to user
   }
 }
 
@@ -204,14 +140,9 @@ app.get("/get-token", (req, res) => {
     if (err) {
       console.error(err);
     } else {
-      console.log("BODY: ", body);
       const raw = JSON.parse(body);
-      res.send({
-        bearer_token: raw.access_token,
-        refresh_token: raw.refresh_token,
-        expires_in: raw.expires_in,
-      });
-
+      // console.log("BODY: ", body);
+      res.send();
       const newAccessToken = new models.Token({
         accessToken: raw.access_token,
         refreshToken: raw.refresh_token,
@@ -221,7 +152,7 @@ app.get("/get-token", (req, res) => {
         if (error) {
           console.log("Error: ", error);
         } else {
-          console.log("Success. ", response);
+          console.log("Success. ", response.body);
         }
       });
     }
