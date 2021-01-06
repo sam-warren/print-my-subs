@@ -27,12 +27,13 @@
         <v-card class="mx-auto my-4" max-width="400">
           <v-card-title
             >Step 1: Authenticate with Twitch
-            <v-img
+            <!-- <v-img
               :src="require('@/assets/images/material-checkmark.svg')"
               class="my-3"
               contain
               height="25"
-          /></v-card-title>
+          /> -->
+          </v-card-title>
           <v-card-text>
             <v-row>
               <v-col
@@ -157,7 +158,6 @@ export default class Landing extends Vue {
   }
 
   private printSomeText() {
-    console.log("text to send: ", this.textInput);
     axios({
       url: "http://localhost:5010/print-text",
       method: "POST",

@@ -62,6 +62,8 @@ import { nextTick } from "process";
 import { User } from "./interfaces/user";
 import { Token } from "./interfaces/token";
 import DbUser from "./dbModels/dbUser";
+import printer from "printer";
+import { resolve } from "path";
 
 dotenv.config();
 
@@ -78,48 +80,85 @@ var user = new dbModels.User({
   username: "",
 });
 
+var currentPrinter = new Printer({
+  type: PrinterTypes.EPSON, // 'star' or 'epson' TODO: Maybe change this.
+  interface: "printer:", // TODO: update this with actual printer name
+  driver: require("printer"),
+  options: {
+    timeout: 1000,
+  },
+  width: 48, // Number of characters in one line - default: 48
+  characterSet: "SLOVENIA", // Character set - default: SLOVENIA
+  removeSpecialCharacters: false, // Removes special characters - default: false
+  lineCharacter: "-", // Use custom character for drawing lines - default: -
+});
+
 // Initialize middleware
 
-async function printText(text) {
-  let printer = new Printer({
-    type: PrinterTypes.EPSON, // 'star' or 'epson' TODO: Maybe change this.
-    interface: "printer:Thermal Printer", // TODO: update this with actual printer name
-    driver: require("printer"),
-    options: {
-      timeout: 1000,
-    },
-    width: 48, // Number of characters in one line - default: 48
-    characterSet: "SLOVENIA", // Character set - default: SLOVENIA
-    removeSpecialCharacters: false, // Removes special characters - default: false
-    lineCharacter: "-", // Use custom character for drawing lines - default: -
-  });
-
-  let isConnected = await printer.isPrinterConnected();
+async function printSub(text) {
+  console.log("PRINT SUB CALLED");
+  let isConnected = await currentPrinter.isPrinterConnected();
   console.log("Printer connected:", isConnected);
-
-  printer.alignCenter();
-  printer.println("print my subs for");
-  await printer.printImage("./assets/TwitchBlack.png");
-  printer.newLine();
-  printer.setTextQuadArea();
-  printer.println("New Subscriber!");
-  printer.setTextNormal();
-  printer.drawLine();
-  // printer.println("Hey Blond Radio,"); // TODO: Add channel name
-  printer.setTextQuadArea();
-  printer.invert(true);
-  printer.println(" " + text + " "); // TODO: Add username that subscribed
-  printer.invert(false);
-  printer.setTextNormal();
-  printer.println("just subscribed to your channel.");
-  printer.cut();
-  printer.beep();
+  await printHeader();
+  await printSubDetails(text);
+  // await currentPrinter.clear();
   try {
-    await printer.execute();
+    await currentPrinter.execute().then(() => {
+      currentPrinter.clear();
+    });
     console.log("Print success.");
   } catch (error) {
     console.error("Print error:", error); //TODO: Send error back to user
   }
+}
+
+async function printTest(text: string) {
+  console.log("PRINT TEST CALLED");
+  let isConnected = await currentPrinter.isPrinterConnected();
+  console.log("Printer connected:", isConnected);
+  await printHeader();
+  await printSuccess();
+  // await currentPrinter.clear();
+  try {
+    await currentPrinter.execute().then(() => {
+      currentPrinter.clear();
+    });
+    console.log("Print success.");
+  } catch (error) {
+    console.error("Print error:", error); //TODO: Send error back to user
+  }
+}
+
+async function printHeader() {
+  currentPrinter.alignCenter();
+  currentPrinter.println("print my subs for");
+  await currentPrinter.printImage("./assets/TwitchBlack.png");
+  currentPrinter.newLine();
+  currentPrinter.drawLine();
+}
+
+async function printSuccess() {
+  currentPrinter.setTextQuadArea();
+  currentPrinter.println("Success!");
+  currentPrinter.setTextNormal();
+  currentPrinter.println("Printer set up successfully.");
+  currentPrinter.beep();
+  currentPrinter.cut();
+}
+
+async function printSubDetails(text: string) {
+  currentPrinter.setTextQuadArea();
+  currentPrinter.println("New Subscriber!");
+  currentPrinter.setTextNormal();
+  // printer.println("Hey Blond Radio,"); // TODO: Add channel name
+  currentPrinter.setTextQuadArea();
+  currentPrinter.invert(true);
+  currentPrinter.println(" " + text + " "); // TODO: Add username that subscribed
+  currentPrinter.invert(false);
+  currentPrinter.setTextNormal();
+  currentPrinter.println("just subscribed to your channel.");
+  currentPrinter.beep();
+  currentPrinter.cut();
 }
 
 async function initApi(dbAccessToken, dbRefreshToken, dbExpiresIn) {
@@ -231,10 +270,33 @@ app.get("/get-token", (req, res) => {
   });
 });
 
-app.get("/get-printers", (req, res) => {});
+app.get("/printers", (req, res) => {
+  const printers = printer.getPrinters();
+  console.log(printers);
+  res.send({ printers: printers });
+});
+
+app.post("/printers", jsonParser, async (req, res) => {
+  console.log(req.body);
+  const printerType =
+    req.body.printerType === "EPSON" ? PrinterTypes.EPSON : PrinterTypes.STAR;
+  currentPrinter = new Printer({
+    type: printerType, // 'star' or 'epson' TODO: Maybe change this.
+    interface: "printer:" + req.body.printer, // TODO: update this with actual printer name
+    driver: require("printer"),
+    options: {
+      timeout: 1000,
+    },
+    width: 48, // Number of characters in one line - default: 48
+    characterSet: "SLOVENIA", // Character set - default: SLOVENIA
+    removeSpecialCharacters: false, // Removes special characters - default: false
+    lineCharacter: "-", // Use custom character for drawing lines - default: -
+  });
+  printTest("Printer set up successfully!");
+});
 
 app.post("/print-text", jsonParser, (req, res) => {
-  printText(req.body.text);
+  printSub(req.body.text);
 });
 
 // start the Express server
