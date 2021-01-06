@@ -2,9 +2,10 @@
   "name": "server",
   "version": "1.0.0",
   "description": "A node server that listens for pub/sub twitch updates",
-  "main": "server.js",
+  "main": "server.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build-printer": "npm install --save printer --build-from-source",
     "serve": "node --loader ts-node/esm.mjs --experimental-top-level-await server.ts"
   },
   "author": "Sam Warren",
