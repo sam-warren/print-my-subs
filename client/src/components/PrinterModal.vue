@@ -90,7 +90,6 @@ export default class PrinterModal extends Vue {
       url: "http://localhost:5010/printers",
       method: "GET"
     }).then(res => {
-      console.log(res);
       res.data.printers.forEach((printer: any) => {
         this.printers.push(printer.name);
       });
@@ -112,8 +111,6 @@ export default class PrinterModal extends Vue {
         printer: this.selectedPrinter,
         printerType: this.selectedPrinterType
       }
-    }).then(res => {
-      console.log(res);
     });
   }
 

@@ -223,9 +223,7 @@ export default class Landing extends Vue {
       data: {
         text: this.textInput
       }
-    }).then(res => {
-      console.log(res.data.message);
-    });
+    })
   }
 
   /*
@@ -250,7 +248,6 @@ export default class Landing extends Vue {
         url: "http://localhost:5010/user",
         method: "GET"
       }).then(res => {
-        console.log(res.data.user);
         return resolve(res.data.user);
       });
     });

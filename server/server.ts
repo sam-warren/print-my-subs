@@ -27,8 +27,8 @@ var user = new dbModels.User({
 });
 
 var currentPrinter = new Printer({
-  type: PrinterTypes.EPSON, // 'star' or 'epson' TODO: Maybe change this.
-  interface: "printer:", // TODO: update this with actual printer name
+  type: PrinterTypes.EPSON,
+  interface: "printer:",
   driver: require("printer"),
   options: {
     timeout: 1000,
@@ -56,7 +56,7 @@ async function printSub(text) {
     });
     console.log("Print success.");
   } catch (error) {
-    console.error("Print error:", error); //TODO: Send error back to user
+    console.error("Print error:", error);
   }
 }
 
@@ -77,7 +77,7 @@ async function printTest(text: string) {
     });
     console.log("Print success.");
   } catch (error) {
-    console.error("Print error:", error); //TODO: Send error back to user
+    console.error("Print error:", error);
   }
 }
 
@@ -117,7 +117,7 @@ async function printSubDetails(text: string) {
   // printer.println("Hey Blond Radio,"); // TODO: Add channel name
   currentPrinter.setTextQuadArea();
   currentPrinter.invert(true);
-  currentPrinter.println(" " + text + " "); // TODO: Add username that subscribed
+  currentPrinter.println(" " + text + " ");
   currentPrinter.invert(false);
   currentPrinter.setTextNormal();
   currentPrinter.println("just subscribed to your channel.");
@@ -127,7 +127,7 @@ async function printSubDetails(text: string) {
 
 /*
   initApi()
-  Not really sure what's going on here yet TODO: revise this
+  Initialize auth provider
 */
 async function initApi(dbAccessToken, dbRefreshToken, dbExpiresIn) {
   const clientSecret = process.env.CLIENT_SECRET;
@@ -178,33 +178,31 @@ async function getUser(): Promise<User> {
 }
 
 async function initAuthProvider(token) {
-  getUser().then(() => {
-    const secret = process.env.CLIENT_SECRET;
-    authProvider = new RefreshableAuthProvider(
-      new StaticAuthProvider(process.env.CLIENT_ID, token.accessToken),
-      {
-        clientSecret: secret,
-        refreshToken: token.refreshToken,
-        expiry: token.expiresIn === null ? null : new Date(token.expiresIn),
-        onRefresh: async () => {
-          const newToken = await new dbModels.Token({
-            accessToken: token.accessToken,
-            refreshToken: token.refreshToken,
-            expiresIn: token.expiresIn,
-            userId: user.id,
-          });
-          await token.save((error) => {
-            if (error) {
-              console.log("Error: ", error);
-            } else {
-              console.log("Successfully saved token");
-              checkToken();
-            }
-          });
-        },
-      }
-    );
-  });
+  const secret = process.env.CLIENT_SECRET;
+  authProvider = new RefreshableAuthProvider(
+    new StaticAuthProvider(process.env.CLIENT_ID, token.accessToken),
+    {
+      clientSecret: secret,
+      refreshToken: token.refreshToken,
+      expiry: token.expiresIn === null ? null : new Date(token.expiresIn),
+      onRefresh: async () => {
+        const newToken = await new dbModels.Token({
+          accessToken: token.accessToken,
+          refreshToken: token.refreshToken,
+          expiresIn: token.expiresIn,
+          userId: user.id,
+        });
+        await token.save((error) => {
+          if (error) {
+            console.log("Error: ", error);
+          } else {
+            console.log("Successfully saved token");
+            checkToken();
+          }
+        });
+      },
+    }
+  );
 }
 
 async function checkToken() {
@@ -346,8 +344,8 @@ app.post("/printers", jsonParser, async (req, res) => {
   const printerType =
     req.body.printerType === "EPSON" ? PrinterTypes.EPSON : PrinterTypes.STAR;
   currentPrinter = new Printer({
-    type: printerType, // 'star' or 'epson' TODO: Maybe change this.
-    interface: "printer:" + req.body.printer, // TODO: update this with actual printer name
+    type: printerType,
+    interface: "printer:" + req.body.printer,
     driver: require("printer"),
     options: {
       timeout: 1000,
