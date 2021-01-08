@@ -1,69 +1,13 @@
-// import { RefreshableAuthProvider, StaticAuthProvider } from "twitch-auth";
-// import { promises as fs } from "fs";
-// import { PubSubClient } from "twitch-pubsub-client";
-// import { ApiClient } from "twitch";
-// import { PubSubSubscriptionMessage } from "twitch-pubsub-client";
-
-// async function main() {
-//   const tokenData = JSON.parse(await fs.readFile("./tokens.json", "utf-8"));
-//   const authProvider = new RefreshableAuthProvider(
-//     new StaticAuthProvider(clientId, tokenData.accessToken),
-//     {
-//       clientSecret,
-//       refreshToken: tokenData.refreshToken,
-//       expiry:
-//         tokenData.expiryTimestamp === null
-//           ? null
-//           : new Date(tokenData.expiryTimestamp),
-//       onRefresh: async ({ accessToken, refreshToken, expiryDate }) => {
-//         const newTokenData = {
-//           accessToken,
-//           refreshToken,
-//           expiryTimestamp: expiryDate === null ? null : expiryDate.getTime(),
-//         };
-//         await fs.writeFile(
-//           "./tokens.json",
-//           JSON.stringify(newTokenData, null, 4),
-//           "utf-8"
-//         );
-//       },
-//     }
-//   );
-
-//   const apiClient = new ApiClient({ authProvider });
-//   const pubSubClient = new PubSubClient();
-//   const userId = await pubSubClient.registerUserListener(apiClient);
-//   const listener = await pubSubClient.onSubscription(
-//     userId,
-//     (message: PubSubSubscriptionMessage) => {
-//       console.log(`${message.userDisplayName} just subscribed!`);
-//     }
-//   );
-// }
-
-// main();
-
 import express from "express";
 import * as dotenv from "dotenv";
 import request from "request";
 import dbModels, { connectDb } from "./dbModels";
+import { TokenDocument } from "./dbDocuments/TokenDocument";
 import * as ThermalPrinter from "node-thermal-printer";
-import * as mongoose from "mongoose";
-import {
-  ClientCredentialsAuthProvider,
-  RefreshableAuthProvider,
-  StaticAuthProvider,
-} from "twitch-auth";
-import { promises as fs } from "fs";
-import { PubSubClient } from "twitch-pubsub-client";
-import { ApiClient } from "twitch";
-import { PubSubSubscriptionMessage } from "twitch-pubsub-client";
-import { nextTick } from "process";
+import { RefreshableAuthProvider, StaticAuthProvider } from "twitch-auth";
+import { ApiClient, HelixPrivilegedUser } from "twitch";
 import { User } from "./interfaces/user";
-import { Token } from "./interfaces/token";
-import DbUser from "./dbModels/dbUser";
 import printer from "printer";
-import { resolve } from "path";
 
 dotenv.config();
 
@@ -74,7 +18,9 @@ var jsonParser = bodyParser.json();
 const port = process.env.PORT; // default port to listen
 const Printer = ThermalPrinter.printer;
 const PrinterTypes = ThermalPrinter.types;
-var authProvider;
+var authProvider; // Change this
+var isAuthenticated = false;
+
 var user = new dbModels.User({
   id: -1,
   username: "",
@@ -93,8 +39,10 @@ var currentPrinter = new Printer({
   lineCharacter: "-", // Use custom character for drawing lines - default: -
 });
 
-// Initialize middleware
-
+/*
+  printSub()
+  Prints a subscriber receipt with a given name
+*/
 async function printSub(text) {
   console.log("PRINT SUB CALLED");
   let isConnected = await currentPrinter.isPrinterConnected();
@@ -112,6 +60,10 @@ async function printSub(text) {
   }
 }
 
+/*
+  printTest()
+  Prints a test message to ensure printer is connected
+*/
 async function printTest(text: string) {
   console.log("PRINT TEST CALLED");
   let isConnected = await currentPrinter.isPrinterConnected();
@@ -129,6 +81,10 @@ async function printTest(text: string) {
   }
 }
 
+/*
+  printHeader()
+  Prints the header of the receipt
+*/
 async function printHeader() {
   currentPrinter.alignCenter();
   currentPrinter.println("print my subs for");
@@ -137,6 +93,10 @@ async function printHeader() {
   currentPrinter.drawLine();
 }
 
+/*
+  printSuccess()
+  Prints a success message after completion of printer setup
+*/
 async function printSuccess() {
   currentPrinter.setTextQuadArea();
   currentPrinter.println("Success!");
@@ -146,6 +106,10 @@ async function printSuccess() {
   currentPrinter.cut();
 }
 
+/*
+  printSubDetails()
+  Takes in the name of the subscriber and prints it on the receipt
+*/
 async function printSubDetails(text: string) {
   currentPrinter.setTextQuadArea();
   currentPrinter.println("New Subscriber!");
@@ -161,6 +125,10 @@ async function printSubDetails(text: string) {
   currentPrinter.cut();
 }
 
+/*
+  initApi()
+  Not really sure what's going on here yet TODO: revise this
+*/
 async function initApi(dbAccessToken, dbRefreshToken, dbExpiresIn) {
   const clientSecret = process.env.CLIENT_SECRET;
   authProvider = new RefreshableAuthProvider(
@@ -191,6 +159,10 @@ async function initApi(dbAccessToken, dbRefreshToken, dbExpiresIn) {
   );
 }
 
+/*
+  getUser()
+  Janky atm
+*/
 async function getUser(): Promise<User> {
   const apiClient = new ApiClient(authProvider);
   return new Promise((resolve, reject) => {
@@ -205,6 +177,64 @@ async function getUser(): Promise<User> {
   });
 }
 
+async function initAuthProvider(token) {
+  getUser().then(() => {
+    const secret = process.env.CLIENT_SECRET;
+    authProvider = new RefreshableAuthProvider(
+      new StaticAuthProvider(process.env.CLIENT_ID, token.accessToken),
+      {
+        clientSecret: secret,
+        refreshToken: token.refreshToken,
+        expiry: token.expiresIn === null ? null : new Date(token.expiresIn),
+        onRefresh: async () => {
+          const newToken = await new dbModels.Token({
+            accessToken: token.accessToken,
+            refreshToken: token.refreshToken,
+            expiresIn: token.expiresIn,
+            userId: user.id,
+          });
+          await token.save((error) => {
+            if (error) {
+              console.log("Error: ", error);
+            } else {
+              console.log("Successfully saved token");
+              checkToken();
+            }
+          });
+        },
+      }
+    );
+  });
+}
+
+async function checkToken() {
+  const token = await dbModels.Token.findOne({
+    userId: user.id,
+  });
+  if (token) {
+    isAuthenticated = true;
+    initAuthProvider(token);
+  } else {
+    isAuthenticated = false;
+  }
+}
+
+app.use(async function isExpired(req, res, next) {
+  if (isAuthenticated) {
+    const token: TokenDocument = await dbModels.Token.findOne({
+      userId: user.id,
+    });
+    console.log("ISAUTHENTICATED TOKEN: ", token);
+    if (token.expiresIn <= 1000) {
+      initAuthProvider(token);
+    }
+  }
+  next();
+});
+
+/*
+  Enable CORS
+*/
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "http://localhost:8080"); // update to match the domain you will make the request from
   res.header(
@@ -214,16 +244,34 @@ app.use(function (req, res, next) {
   next();
 });
 
-// define a route handler for the default home page
-app.get("/", (req, res) => {
+/*
+  Base route. Sends back message.
+*/ app.get("/", (req, res) => {
   res.send("PrintMySubs API");
 });
 
+/*
+  GET user
+  Endpoint for retrieving information about the currently
+  authenticated user
+*/
+app.get("/user", (req, res) => {
+  res.send({ user: user });
+});
+
+/*
+  GET client-id
+  Sends back client ID from .env file for use in authentication flow
+*/
 app.get("/client-id", (req, res) => {
   res.send({ client_id: process.env.CLIENT_ID });
 });
 
-app.get("/get-token", (req, res) => {
+/*
+  GET token
+  Begins OAuth 2.0 authentication flow that retrieves an access token from Twitch.
+*/
+app.get("/token", (req, res) => {
   const requestOptions = {
     url:
       "https://id.twitch.tv/oauth2/token?client_id=" +
@@ -240,42 +288,59 @@ app.get("/get-token", (req, res) => {
       console.error(err);
     } else {
       const raw = JSON.parse(body);
-      // console.log("BODY: ", body);
-      res.send();
-      // We have the token.
-      await initApi(raw.access_token, raw.refresh_token, raw.expires_in).then(
-        async (res) => {
-          console.log("Response from initApi: ", res);
-          await getUser().then((res: User) => {
-            const newAccessToken = new dbModels.Token({
-              accessToken: raw.access_token,
-              refreshToken: raw.refresh_token,
-              expiresIn: raw.expires_in,
-              user: new dbModels.User({
-                id: res.id,
-                username: res.username,
-              }),
-            });
-            newAccessToken.save((error) => {
-              if (error) {
-                console.log("Error: ", error);
-              } else {
-                console.log("Success. ", response.body);
-              }
-            });
-          });
-        }
+      const authProvider = new StaticAuthProvider(
+        process.env.CLIENT_ID,
+        raw.access_token
       );
+      const apiClient = new ApiClient({ authProvider });
+      await apiClient.helix.users.getMe().then((res: HelixPrivilegedUser) => {
+        console.log(res);
+        user = new dbModels.User({
+          id: res.id,
+          username: res.name,
+        });
+        console.log(user);
+      });
+      res.send({ user: user });
+      await user.save((error) => {
+        if (error) {
+          console.log("Error: ", error);
+        } else {
+          console.log("Successfully saved new user");
+        }
+      });
+      const token = await new dbModels.Token({
+        accessToken: raw.access_token,
+        refreshToken: raw.refresh_token,
+        expiresIn: raw.expires_in,
+        userId: user.id,
+      });
+      await token.save((error) => {
+        if (error) {
+          console.log("Error: ", error);
+        } else {
+          console.log("Successfully saved token");
+          checkToken();
+        }
+      });
     }
   });
 });
 
+/*
+  GET printers
+  Returns a list of printers recognized in Windows
+*/
 app.get("/printers", (req, res) => {
   const printers = printer.getPrinters();
   console.log(printers);
   res.send({ printers: printers });
 });
 
+/*
+  POST printers
+  Sets the printer to be used
+*/
 app.post("/printers", jsonParser, async (req, res) => {
   console.log(req.body);
   const printerType =
@@ -295,6 +360,10 @@ app.post("/printers", jsonParser, async (req, res) => {
   printTest("Printer set up successfully!");
 });
 
+/*
+  POST print-text
+  Prints text specified by user on the webclient
+*/
 app.post("/print-text", jsonParser, (req, res) => {
   printSub(req.body.text);
 });

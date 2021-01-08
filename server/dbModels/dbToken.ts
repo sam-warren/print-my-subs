@@ -1,5 +1,6 @@
 import { exception } from "console";
 import mongoose from "mongoose";
+import { TokenDocument } from "../dbDocuments/TokenDocument";
 
 const tokenSchema = new mongoose.Schema(
   {
@@ -15,26 +16,27 @@ const tokenSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+    userId: {
+      type: String,
+      required: true,
     },
   },
   { timestamps: true }
 );
 
-tokenSchema.statics.findByUserId = async function (user) {
+tokenSchema.statics.findByUser = async function (userId) {
   let token = await this.findOne({
-    user: user,
+    userId: userId,
   });
 
   if (!token) {
     return new exception("No access token found in database");
   }
 
-  return user;
+  return token;
 };
 
-const Token = mongoose.model("Token", tokenSchema);
+const Token = mongoose.model<TokenDocument>("Token", tokenSchema);
 
 export default Token;
+

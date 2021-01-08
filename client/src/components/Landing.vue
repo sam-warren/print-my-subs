@@ -90,7 +90,11 @@
             </v-row>
             <v-row>
               <v-col>
-                <v-btn block class="button" @click="printSomeText()"
+                <v-btn
+                  block
+                  class="button"
+                  :disabled="textInput === ''"
+                  @click="printSomeText()"
                   >Print test</v-btn
                 >
               </v-col>
@@ -109,14 +113,33 @@
             </v-row>
             <v-card-actions class="mt-4">
               <v-row class="text-center">
-                <v-col><v-btn block class="button">start</v-btn></v-col>
+                <v-col
+                  ><v-btn block class="button" @click="startPrinting()"
+                    >start</v-btn
+                  ></v-col
+                >
               </v-row>
             </v-card-actions>
           </v-card-text>
         </v-card>
       </v-col>
     </v-row>
-    <PrinterModal :is-visible="isVisible" @emit-close="toggleModal" />
+    <v-row class="progressContainer">
+      <v-col
+        ><v-progress-linear
+          :color="twitchPurple"
+          intermediate
+          height="10"
+          :value="progress"
+          striped
+        ></v-progress-linear>
+      </v-col>
+    </v-row>
+    <PrinterModal
+      :is-visible="isVisible"
+      @emit-close="toggleModal"
+      @emit-success="isPrinterConnected = true"
+    />
   </v-container>
 </template>
 
@@ -125,6 +148,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import PrinterModal from "./PrinterModal.vue";
 import axios from "axios";
+import { User } from "../interfaces/user";
 
 @Component({
   components: {
@@ -133,10 +157,23 @@ import axios from "axios";
 })
 export default class Landing extends Vue {
   private isAuthenticated: boolean = false;
+  private isPrinterConnected: boolean = false;
+  private startButtonPushed: boolean = false;
   private textInput = "";
   private isVisible = false;
+  private twitchPurple = "#9146ff";
 
-  /*  
+  private mounted() {
+    this.getUser().then((res: User) => {
+      if (res.id === "-1") {
+        this.isAuthenticated = false;
+      } else {
+        this.isAuthenticated = true;
+      }
+    });
+  }
+
+  /*
       onAuthButtonClicked
       Initiates OAuth 2.0 procedure for Twitch.tv to set an access token
   */
@@ -153,7 +190,28 @@ export default class Landing extends Vue {
     });
   }
 
-  /*  
+  private startPrinting() {
+    this.startButtonPushed = true;
+  }
+
+  private get progress(): string {
+    let progress = 0;
+    if (this.isAuthenticated) {
+      progress += 33;
+    }
+    if (this.isPrinterConnected) {
+      progress += 33;
+    }
+    if (this.startButtonPushed) {
+      progress += 33;
+    }
+    if (progress === 99) {
+      progress = 100;
+    }
+    return progress.toString();
+  }
+
+  /*
       printSomeText
       Prints the text input in the field
   */
@@ -170,7 +228,7 @@ export default class Landing extends Vue {
     });
   }
 
-  /*  
+  /*
       onUnlinkButtonClicked
       Not yet implemented
   */
@@ -178,12 +236,24 @@ export default class Landing extends Vue {
     console.log("Unlink");
   }
 
-  /*  
+  /*
       toggleModal
       Toggles the printer modal
   */
   private toggleModal() {
     this.isVisible = !this.isVisible;
+  }
+
+  private getUser(): Promise<User> {
+    return new Promise((resolve, reject) => {
+      axios({
+        url: "http://localhost:5010/user",
+        method: "GET"
+      }).then(res => {
+        console.log(res.data.user);
+        return resolve(res.data.user);
+      });
+    });
   }
 }
 </script>
@@ -192,5 +262,14 @@ export default class Landing extends Vue {
 .button {
   background-color: $twitch_purple !important;
   color: white !important;
+}
+
+.button[disabled] {
+  background-color: $widow !important;
+  color: white !important
+}
+
+.progressContainer {
+  padding-top: 150px;
 }
 </style>

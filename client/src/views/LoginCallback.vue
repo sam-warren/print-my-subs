@@ -51,11 +51,11 @@ export default class LoginCallback extends Vue {
   /*  
       mounted
       Sends the code to the server to retrieve a new access token
-  */ 
+  */
   private mounted() {
     console.log(this.$route.query.code);
     axios({
-      url: "http://localhost:5010/get-token?code=" + this.$route.query.code,
+      url: "http://localhost:5010/token?code=" + this.$route.query.code,
       method: "GET"
     }).then(res => {
       res.status === 200 ? (this.gotBearer = true) : (this.gotBearer = false);

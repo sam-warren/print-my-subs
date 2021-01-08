@@ -14,3 +14,4 @@ const dbModels = { User, Token };
 export { connectDb };
 
 export default dbModels;
+

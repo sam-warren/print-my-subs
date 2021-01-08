@@ -1,5 +1,6 @@
 import { exception } from "console";
 import mongoose, { QueryOptions } from "mongoose";
+import { UserDocument } from "../dbDocuments/UserDocument";
 
 const userSchema = new mongoose.Schema(
   {
@@ -16,6 +17,8 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+var userModel = mongoose.model("userModel", userSchema);
 
 userSchema.statics.findByUsername = async function (username) {
   let user = await this.findOne({
@@ -45,6 +48,18 @@ userSchema.pre("remove", function (next: any) {
   this.model("Token").deleteMany({ user: this._id }, next);
 });
 
-const User = mongoose.model("User", userSchema);
+userSchema.pre("save", function (next: any) {
+  var self = this;
+  userModel.find({ id: self.id }, function (err, docs) {
+    if (!docs.length) {
+      next();
+    } else {
+      console.log("User already exists!");
+      next(new Error("User exists!"));
+    }
+  });
+});
+
+const User = mongoose.model<UserDocument>("User", userSchema);
 
 export default User;
