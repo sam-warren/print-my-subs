@@ -2,7 +2,7 @@
 ECHO Starting database...
 cd db
 start "" docker-compose up
-timeout \t 5
+timeout \t 10
 ECHO Starting server...
 cd ../server
 start "" npm run serve
