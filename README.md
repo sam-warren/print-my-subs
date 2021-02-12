@@ -11,7 +11,7 @@ git clone https://github.com/sam-warren/print-my-subs.git
 Create an ENV file in server/.env with the following properties:
 
 ```
-CLIENT_ID=123
+CLIENT_ID=
 CLIENT_SECRET=
 PORT=5010
 DATABASE_URL=
