@@ -20,7 +20,7 @@ var jsonParser = bodyParser.json();
 const port = process.env.PORT; // default port to listen
 const Printer = ThermalPrinter.printer;
 const PrinterTypes = ThermalPrinter.types;
-var authProvider; // Change this
+var authProvider;
 var isAuthenticated = false;
 var subListener;
 var whisperListener;
@@ -161,7 +161,6 @@ async function printSubDetails(text: string) {
   currentPrinter.setTextQuadArea();
   currentPrinter.println("New Subscriber!");
   currentPrinter.setTextNormal();
-  // printer.println("Hey Blond Radio,"); // TODO: Add channel name
   currentPrinter.setTextQuadArea();
   currentPrinter.invert(true);
   currentPrinter.println(" " + text + " ");
@@ -170,7 +169,6 @@ async function printSubDetails(text: string) {
   currentPrinter.println("just subscribed to your channel.");
   currentPrinter.beep();
   currentPrinter.cut();
-  // one line indexes char 0 to 48
 }
 
 /*
@@ -181,7 +179,6 @@ async function printWhisperDetails(text: string, message: string) {
   currentPrinter.setTextQuadArea();
   currentPrinter.println("New Whisper!");
   currentPrinter.setTextNormal();
-  // printer.println("Hey Blond Radio,"); // TODO: Add channel name
   currentPrinter.setTextQuadArea();
   currentPrinter.invert(true);
   currentPrinter.println(" " + text + " ");
@@ -189,7 +186,6 @@ async function printWhisperDetails(text: string, message: string) {
   currentPrinter.setTextNormal();
   currentPrinter.println("says:");
   currentPrinter.newLine();
-  // currentPrinter.println(message)
   await cutText(message);
   currentPrinter.beep();
   currentPrinter.cut();
