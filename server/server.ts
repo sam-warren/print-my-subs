@@ -8,6 +8,8 @@ import { RefreshableAuthProvider, StaticAuthProvider } from "twitch-auth";
 import { ApiClient, HelixPrivilegedUser } from "twitch";
 import { User } from "./interfaces/user";
 import printer from "printer";
+import { PubSubClient, PubSubWhisperMessage } from "twitch-pubsub-client";
+import { PubSubSubscriptionMessage } from "twitch-pubsub-client";
 
 dotenv.config();
 
@@ -20,6 +22,8 @@ const Printer = ThermalPrinter.printer;
 const PrinterTypes = ThermalPrinter.types;
 var authProvider; // Change this
 var isAuthenticated = false;
+var subListener;
+var whisperListener;
 
 var user = new dbModels.User({
   id: -1,
@@ -60,6 +64,23 @@ async function printSub(text) {
   }
 }
 
+async function printWhisper(text, message) {
+  console.log("PRINT WHISPER CALLED");
+  let isConnected = await currentPrinter.isPrinterConnected();
+  console.log("Printer connected:", isConnected);
+  await printHeader();
+  await printWhisperDetails(text, message);
+  // await currentPrinter.clear();
+  try {
+    await currentPrinter.execute().then(() => {
+      currentPrinter.clear();
+    });
+    console.log("Print success.");
+  } catch (error) {
+    console.error("Print error:", error);
+  }
+}
+
 /*
   printTest()
   Prints a test message to ensure printer is connected
@@ -80,6 +101,32 @@ async function printTest(text: string) {
     console.error("Print error:", error);
   }
 }
+
+async function listen(apiClient) {
+  console.log("Listening...", apiClient);
+  const pubSubClient = new PubSubClient();
+  const userId = await pubSubClient.registerUserListener(apiClient);
+  subListener = await pubSubClient.onSubscription(
+    userId,
+    (message: PubSubSubscriptionMessage) => {
+      console.log(`${message.userDisplayName} just subscribed!`);
+      printSub(`${message.userDisplayName}`);
+    }
+  );
+  whisperListener = await pubSubClient.onWhisper(
+    userId,
+    (message: PubSubWhisperMessage) => {
+      console.log(`${message.senderDisplayName} just whispered!`);
+      printWhisper(`${message.senderDisplayName}`, `${message.text}`);
+    }
+  );
+}
+
+module.exports = {
+  printSub: printSub,
+  printWhisper: printWhisper,
+  listen: listen,
+};
 
 /*
   printHeader()
@@ -123,6 +170,43 @@ async function printSubDetails(text: string) {
   currentPrinter.println("just subscribed to your channel.");
   currentPrinter.beep();
   currentPrinter.cut();
+  // one line indexes char 0 to 48
+}
+
+/*
+  printWhisperDetails()
+  Takes in the name of the whisperer and prints it on the receipt
+*/
+async function printWhisperDetails(text: string, message: string) {
+  currentPrinter.setTextQuadArea();
+  currentPrinter.println("New Whisper!");
+  currentPrinter.setTextNormal();
+  // printer.println("Hey Blond Radio,"); // TODO: Add channel name
+  currentPrinter.setTextQuadArea();
+  currentPrinter.invert(true);
+  currentPrinter.println(" " + text + " ");
+  currentPrinter.invert(false);
+  currentPrinter.setTextNormal();
+  currentPrinter.println("says:");
+  currentPrinter.newLine();
+  // currentPrinter.println(message)
+  await cutText(message);
+  currentPrinter.beep();
+  currentPrinter.cut();
+}
+
+async function cutText(message: string) {
+  let words = message.split(" ");
+  let line = "";
+  for (let i = 0; i < words.length; i++) {
+    if (line.length + words[i].length + 1 < 46) {
+      line = line + words[i] + " ";
+    } else {
+      await currentPrinter.println(line);
+      line = words[i] + " ";
+    }
+  }
+  currentPrinter.println(line);
 }
 
 /*
@@ -147,7 +231,7 @@ async function initApi(dbAccessToken, dbRefreshToken, dbExpiresIn) {
             username: this.user.username,
           }),
         });
-        newAccessToken.save((error) => {
+        await newAccessToken.save((error) => {
           if (error) {
             console.log("Error updating token.: ", error);
           } else {
@@ -157,24 +241,6 @@ async function initApi(dbAccessToken, dbRefreshToken, dbExpiresIn) {
       },
     }
   );
-}
-
-/*
-  getUser()
-  Janky atm
-*/
-async function getUser(): Promise<User> {
-  const apiClient = new ApiClient(authProvider);
-  return new Promise((resolve, reject) => {
-    apiClient.helix.users.getMe(true).then((res) => {
-      console.log(res);
-      const user: User = {
-        id: res.id,
-        username: res.name,
-      };
-      return resolve(user);
-    });
-  });
 }
 
 async function initAuthProvider(token) {
@@ -321,6 +387,7 @@ app.get("/token", (req, res) => {
           checkToken();
         }
       });
+      module.exports.listen(apiClient);
     }
   });
 });

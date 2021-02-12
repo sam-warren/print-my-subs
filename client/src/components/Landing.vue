@@ -101,27 +101,24 @@
             </v-row>
           </v-card-text>
         </v-card> </v-col
-      ><v-col>
-        <v-card class="mx-auto my-4" max-width="400">
-          <v-card-title>Step 4: Start Printing!</v-card-title>
-          <v-card-text>
-            <v-row>
-              <v-col
-                >Once you have completed the previous two steps, click start to
-                begin printing your new subscribers!</v-col
-              >
-            </v-row>
-            <v-card-actions class="mt-4">
-              <v-row class="text-center">
-                <v-col
-                  ><v-btn block class="button" @click="startPrinting()"
-                    >start</v-btn
-                  ></v-col
-                >
-              </v-row>
-            </v-card-actions>
-          </v-card-text>
-        </v-card>
+      ><v-col v-if="progress == 100">
+        <v-row class="text-center">
+          <v-col>
+            <v-img
+              :src="require('@/assets/images/material-checkmark.svg')"
+              class="my-3"
+              contain
+              height="100"
+            />
+            <h1 class="pt-4 display-1 font-weight-medium">
+              All set.
+            </h1>
+            <h2 class="pt-4 display-0 font-weight-light">
+              This website will listen for new whispers and subscribers on your
+              channel. Close all running windows to stop.
+            </h2>
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
     <v-row class="progressContainer">
@@ -158,7 +155,6 @@ import { User } from "../interfaces/user";
 export default class Landing extends Vue {
   private isAuthenticated: boolean = false;
   private isPrinterConnected: boolean = false;
-  private startButtonPushed: boolean = false;
   private textInput = "";
   private isVisible = false;
   private twitchPurple = "#9146ff";
@@ -186,27 +182,17 @@ export default class Landing extends Vue {
       window.location.href =
         "https://id.twitch.tv/oauth2/authorize?client_id=" +
         res.data.client_id +
-        "&redirect_uri=http://localhost:8080/login-callback&response_type=code&scope=channel:read:subscriptions+channel_subscriptions";
+        "&redirect_uri=http://localhost:8080/login-callback&response_type=code&scope=channel:read:subscriptions+channel_subscriptions+whispers:read";
     });
-  }
-
-  private startPrinting() {
-    this.startButtonPushed = true;
   }
 
   private get progress(): string {
     let progress = 0;
     if (this.isAuthenticated) {
-      progress += 33;
+      progress += 50;
     }
     if (this.isPrinterConnected) {
-      progress += 33;
-    }
-    if (this.startButtonPushed) {
-      progress += 33;
-    }
-    if (progress === 99) {
-      progress = 100;
+      progress += 50;
     }
     return progress.toString();
   }
@@ -223,7 +209,7 @@ export default class Landing extends Vue {
       data: {
         text: this.textInput
       }
-    })
+    });
   }
 
   /*
@@ -263,7 +249,7 @@ export default class Landing extends Vue {
 
 .button[disabled] {
   background-color: $widow !important;
-  color: white !important
+  color: white !important;
 }
 
 .progressContainer {
