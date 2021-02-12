@@ -21,4 +21,7 @@ DATABASE_URL=
 It may take docker up to a minute to set up the database before you can authenticate with twitch. Run printmysubs.bat for the first time and leave it until the logs in the db shell stop. Then close all the shell windows and start it again with printmysubs.bat.
 
 # Starting up
-Run startup.bat
+Run `printmysubs.bat`
+
+# Getting updates
+Run `getupdates.bat`
