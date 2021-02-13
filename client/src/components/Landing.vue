@@ -37,18 +37,11 @@
               <v-row class="text-center">
                 <v-col
                   ><v-btn
-                    v-if="!isAuthenticated"
+                    :disabled="isAuthenticated"
                     block
                     class="button"
                     @click="onAuthButtonClicked()"
                     >Authetnicate</v-btn
-                  >
-                  <v-btn
-                    v-else
-                    block
-                    class="secondary"
-                    @click="onUnlinkButtonClicked()"
-                    >Unlink Account</v-btn
                   >
                 </v-col>
               </v-row>
@@ -117,6 +110,25 @@
               This website will listen for new whispers and subscribers on your
               channel. Close all running windows to stop.
             </h2>
+            <v-card class="mx-auto my-4" max-width="400">
+              <v-card-title>Settings</v-card-title>
+              <v-card-text>
+                <v-row>
+                  <v-col
+                    ><v-switch
+                      v-model="listenForSubs"
+                      color="#9146ff"
+                      label="Listen for new subscribers"
+                    ></v-switch>
+                    <v-switch
+                      v-model="listenForWhispers"
+                      color="#9146ff"
+                      label="Listen for whispers"
+                    ></v-switch
+                  ></v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
           </v-col>
         </v-row>
       </v-col>
@@ -142,7 +154,7 @@
 
 <script lang="ts">
 /* eslint-disable */
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import PrinterModal from "./PrinterModal.vue";
 import axios from "axios";
 import { User } from "../interfaces/user";
@@ -158,6 +170,8 @@ export default class Landing extends Vue {
   private textInput = "";
   private isVisible = false;
   private twitchPurple = "#9146ff";
+  private listenForSubs = true;
+  private listenForWhispers = true;
 
   private mounted() {
     this.getUser().then((res: User) => {
@@ -201,13 +215,36 @@ export default class Landing extends Vue {
       printSomeText
       Prints the text input in the field
   */
-
   private printSomeText() {
     axios({
       url: "http://localhost:5010/print-text",
       method: "POST",
       data: {
         text: this.textInput
+      }
+    });
+  }
+
+  /* */
+  @Watch("listenForSubs")
+  private toggleSubs() {
+    axios({
+      url: "http://localhost:5010/listen-for-subs",
+      method: "POST",
+      data: {
+        listenForSubs: this.listenForSubs
+      }
+    });
+  }
+
+  /* */
+  @Watch("listenForWhispers")
+  private toggleWhispers() {
+    axios({
+      url: "http://localhost:5010/listen-for-whispers",
+      method: "POST",
+      data: {
+        listenForWhispers: this.listenForWhispers
       }
     });
   }

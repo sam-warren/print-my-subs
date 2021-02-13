@@ -21,9 +21,12 @@ const port = process.env.PORT; // default port to listen
 const Printer = ThermalPrinter.printer;
 const PrinterTypes = ThermalPrinter.types;
 var authProvider;
+var client;
 var isAuthenticated = false;
 var subListener;
 var whisperListener;
+var listenForSubs = true;
+var listenForWhispers = true;
 
 var user = new dbModels.User({
   id: -1,
@@ -384,6 +387,7 @@ app.get("/token", (req, res) => {
         }
       });
       module.exports.listen(apiClient);
+      client = apiClient;
     }
   });
 });
@@ -427,6 +431,63 @@ app.post("/printers", jsonParser, async (req, res) => {
 */
 app.post("/print-text", jsonParser, (req, res) => {
   printSub(req.body.text);
+});
+
+app.post("/listen-for-subs", jsonParser, async (req, res) => {
+  console.log("LISTEN FOR SUBS CALLED");
+  console.log(
+    "listenForSubs: " +
+      listenForSubs +
+      " req.body.listenForSubs: " +
+      req.body.listenForSubs
+  );
+  if (listenForSubs == false && req.body.listenForSubs == true) {
+    console.log("Recreating sub listener...", client);
+    const pubSubClient = new PubSubClient();
+    const userId = await pubSubClient.registerUserListener(client);
+    subListener = await pubSubClient.onSubscription(
+      userId,
+      (message: PubSubSubscriptionMessage) => {
+        console.log(`${message.userDisplayName} just subscribed!`);
+        printSub(`${message.userDisplayName}`);
+      }
+    );
+    listenForSubs = true;
+  }
+  if (listenForSubs == true && req.body.listenForSubs == false) {
+    console.log("Removing sub listener...");
+    subListener.remove();
+    listenForSubs = false;
+  }
+});
+
+app.post("/listen-for-whispers", jsonParser, async (req, res) => {
+  console.log("LISTEN FOR WHISPERS CALLED");
+  console.log(
+    "listenForWhispers: " +
+      listenForWhispers +
+      " req.body.listenForWhispers: " +
+      req.body.listenForWhispers
+  );
+  if (listenForWhispers == false && req.body.listenForWhispers == true) {
+    // Start listening for whispers
+    console.log("Recreating whisper listener...", client);
+    const pubSubClient = new PubSubClient();
+    const userId = await pubSubClient.registerUserListener(client);
+    whisperListener = await pubSubClient.onWhisper(
+      userId,
+      (message: PubSubWhisperMessage) => {
+        console.log(`${message.senderDisplayName} just whispered!`);
+        printWhisper(`${message.senderDisplayName}`, `${message.text}`);
+      }
+    );
+    listenForWhispers = true;
+  }
+  if (listenForWhispers == true && req.body.listenForWhispers == false) {
+    console.log("Removing whisper listener...");
+    whisperListener.remove();
+    listenForWhispers = false;
+  }
 });
 
 // start the Express server
