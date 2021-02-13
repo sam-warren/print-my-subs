@@ -67,6 +67,10 @@ async function printSub(text) {
   }
 }
 
+/*
+  printWhisper()
+  Prints a whisper receipt with a given name and message
+*/
 async function printWhisper(text, message) {
   console.log("PRINT WHISPER CALLED");
   let isConnected = await currentPrinter.isPrinterConnected();
@@ -210,7 +214,7 @@ async function cutText(message: string) {
 
 /*
   initApi()
-  Initialize auth provider
+  Initialize twitch API
 */
 async function initApi(dbAccessToken, dbRefreshToken, dbExpiresIn) {
   const clientSecret = process.env.CLIENT_SECRET;
@@ -242,6 +246,10 @@ async function initApi(dbAccessToken, dbRefreshToken, dbExpiresIn) {
   );
 }
 
+/*
+  initAuthProvider()
+  Initializes the Twitch auth provider
+*/
 async function initAuthProvider(token) {
   const secret = process.env.CLIENT_SECRET;
   authProvider = new RefreshableAuthProvider(
@@ -270,6 +278,10 @@ async function initAuthProvider(token) {
   );
 }
 
+/*
+  checkToken()
+  Refreshes auth token.
+*/
 async function checkToken() {
   const token = await dbModels.Token.findOne({
     userId: user.id,
@@ -282,6 +294,10 @@ async function checkToken() {
   }
 }
 
+/*
+  isExpired()
+  Refreshes auth token.
+*/
 app.use(async function isExpired(req, res, next) {
   if (isAuthenticated) {
     const token: TokenDocument = await dbModels.Token.findOne({
@@ -433,6 +449,11 @@ app.post("/print-text", jsonParser, (req, res) => {
   printSub(req.body.text);
 });
 
+
+/* 
+  POST listen-for-subs
+  Configures or destroys the sub listener based on user select
+*/
 app.post("/listen-for-subs", jsonParser, async (req, res) => {
   console.log("LISTEN FOR SUBS CALLED");
   console.log(
@@ -442,6 +463,7 @@ app.post("/listen-for-subs", jsonParser, async (req, res) => {
       req.body.listenForSubs
   );
   if (listenForSubs == false && req.body.listenForSubs == true) {
+    // Start listening for subs
     console.log("Recreating sub listener...", client);
     const pubSubClient = new PubSubClient();
     const userId = await pubSubClient.registerUserListener(client);
@@ -455,12 +477,18 @@ app.post("/listen-for-subs", jsonParser, async (req, res) => {
     listenForSubs = true;
   }
   if (listenForSubs == true && req.body.listenForSubs == false) {
+    // Stop listening for subs
     console.log("Removing sub listener...");
     subListener.remove();
     listenForSubs = false;
   }
 });
 
+
+/* 
+  POST listen-for-whispers
+  Configures or destroys the whisper listener based on user select
+*/
 app.post("/listen-for-whispers", jsonParser, async (req, res) => {
   console.log("LISTEN FOR WHISPERS CALLED");
   console.log(
@@ -484,6 +512,7 @@ app.post("/listen-for-whispers", jsonParser, async (req, res) => {
     listenForWhispers = true;
   }
   if (listenForWhispers == true && req.body.listenForWhispers == false) {
+    // Stop listening for whispers
     console.log("Removing whisper listener...");
     whisperListener.remove();
     listenForWhispers = false;

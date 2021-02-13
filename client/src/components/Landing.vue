@@ -225,7 +225,6 @@ export default class Landing extends Vue {
     });
   }
 
-  /* */
   @Watch("listenForSubs")
   private toggleSubs() {
     axios({
@@ -237,7 +236,6 @@ export default class Landing extends Vue {
     });
   }
 
-  /* */
   @Watch("listenForWhispers")
   private toggleWhispers() {
     axios({
