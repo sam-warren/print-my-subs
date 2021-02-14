@@ -15,7 +15,7 @@ git clone https://github.com/sam-warren/print-my-subs.git
 ```
 
 # Config
-1. Create an ENV file in server/.env with the following format:
+1. Create an ENV file in `server/.env` with the following format, or make a copy of `.env.example`:
 
 ```
 CLIENT_ID=
