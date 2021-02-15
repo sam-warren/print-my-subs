@@ -15,13 +15,13 @@ git clone https://github.com/sam-warren/print-my-subs.git
 ```
 
 # Config
-1. Create an ENV file in server/.env with the following format:
+1. Create an ENV file in `server/.env` with the following format, or make a copy of `.env.example`:
 
 ```
 CLIENT_ID=
 CLIENT_SECRET=
 PORT=5010
-DATABASE_URL=mongodb://root:password@{YOUR LOCAL IPV4 HERE}:27017/?authSource=admin
+LOCAL_IPV4=
 ```
 
 You'll need to provide your own Client ID and Client Secret from your individually configured Twitch console. Run `ipconfig` in a cmd shell to get your local IPv4 address. This is usually of the format `192.168.1.XX` or `10.X.X.X`.

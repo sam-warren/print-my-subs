@@ -6,7 +6,7 @@ import * as dotenv from "dotenv";
 dotenv.config({ path: "../.env" });
 
 const connectDb = () => {
-  return mongoose.connect(process.env.DATABASE_URL);
+  return mongoose.connect(`mongodb://root:password@${process.env.LOCAL_IPV4}:27017/?authSource=admin`);
 };
 
 const dbModels = { User, Token };
