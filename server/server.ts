@@ -165,6 +165,9 @@ async function printSuccess() {
   Takes in the name of the subscriber and prints it on the receipt
 */
 async function printSubDetails(text: string) {
+  currentPrinter.alignCenter();
+  currentPrinter.setTextNormal();
+  currentPrinter.println(getDate());
   currentPrinter.setTextQuadArea();
   currentPrinter.println("New Subscriber!");
   currentPrinter.setTextNormal();
@@ -176,6 +179,17 @@ async function printSubDetails(text: string) {
   currentPrinter.println("just subscribed to your channel.");
   currentPrinter.beep();
   currentPrinter.cut();
+}
+
+function getDate() {
+  var d = new Date(),
+    month = "" + (d.getMonth() + 1),
+    day = "" + d.getDate(),
+    year = d.getFullYear();
+
+  if (month.length < 2) month = "0" + month;
+  if (day.length < 2) day = "0" + day;
+  return [year, month, day].join("-");
 }
 
 /*
@@ -449,7 +463,6 @@ app.post("/print-text", jsonParser, (req, res) => {
   printSub(req.body.text);
 });
 
-
 /* 
   POST listen-for-subs
   Configures or destroys the sub listener based on user select
@@ -483,7 +496,6 @@ app.post("/listen-for-subs", jsonParser, async (req, res) => {
     listenForSubs = false;
   }
 });
-
 
 /* 
   POST listen-for-whispers
